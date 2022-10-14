@@ -1,0 +1,42 @@
+function[hzFrequency]=peakHeightANDpeakFrequency()
+%{
+Converts ROI trace data from time domain to frequency domain and displays
+graph of flourescence vs frequency. Presents the peak values of the
+trace data in terms of height and frequency. Half height is also displayed
+graphically. (AUTHOR'S NOTE: Need to find way to display half height as an
+array. Command window also spews output stuff. Need to suppress output.)
+%}
+data=load('Fall.mat');
+
+%Create two arrays which contain will contain the frequency data
+radSecFrequency=zeros(186,1997);
+hzFrequency=zeros(186,1997);
+
+%Converts fluorescence data (F) from time domain to frequency domain (Hz)
+
+for r=1:186
+        
+    for c=1:1997
+
+        radSecFrequency(r,c)=fft(data.F(r,c));
+        hzFrequency(r,c)=(radSecFrequency(r,c))/(2*pi);
+        
+    end
+
+end
+
+%Choose which ROI trace you want to look at
+
+fprintf('There are 186 ROI traces. Tell me which one to graph.\n');
+
+specifier=input('Input Value\n');
+
+%Displays the ROI trace in terms of frequency
+%NOTE: Need to figure out how to display array of widths (half height)
+findpeaks(hzFrequency(specifier,:),'MinPeakProminence',4,'Annotate', 'extents');
+[pks,locs,widths,prom]=findpeaks(hzFrequency(specifier,:));
+
+xlabel('Frequency in Hz')
+ylabel('Flourescence Data from ROI Trace')
+
+end
