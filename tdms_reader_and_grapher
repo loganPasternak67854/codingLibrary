@@ -1,0 +1,69 @@
+function [data]=tdms_data_reader(filePath)
+%{
+---------------------------------------------------------------------------
+function call: [data]=tdms_data_reader(filePath)
+
+input: (filePath)--> path to tdms file on your computer
+output: * (data)--> a structure containing all the tdms information
+        * This function will also produce an graph of our experimental
+          voltage signal.
+
+Note: one needs the TDMS Reader library published by Jim Hokanson to run
+       the TDMS_getStruct function.
+
+       link: https://www.mathworks.com/matlabcentral/fileexchange/30023-tdms-reader
+---------------------------------------------------------------------------
+%}
+
+%Stores all tdms data in the 'data' structure 
+data = TDMS_getStruct(filePath);
+
+%Prints the file properties of the tdms file in the command window
+A=struct2table(data.Props,'AsArray',true);
+disp(A);
+
+%Prints relevant information pertaining to our voltage signal
+fprintf("Voltage Signal Properties");
+disp(data.Untitled.Untitled.Props);
+fprintf("\n");
+
+%Prints the starting timestamp for the experient
+disp(data.Untitled.Untitled.Props.NI_ExpStartTimeStamp);
+fprintf("\n");
+
+%Prints the ending timestamp for the experient
+disp(data.Untitled.Untitled.Props.NI_ExpTimeStamp);
+fprintf("\n")
+
+%Stores legnth of the array containing our voltage values in variable q
+q=length(data.Untitled.Untitled.data);
+
+%Converts inital timestamp and ending timestamp into datetime format
+tBegin=datetime(data.Untitled.Untitled.Props.NI_ExpStartTimeStamp,'InputFormat','dd-MMM-yyyy hh:mm:ss:SSS');
+tEnd=datetime(data.Untitled.Untitled.Props.NI_ExpTimeStamp,'InputFormat','dd-MMM-yyyy hh:mm:ss:SSS');
+
+%Prints the starting timestamp for the experient
+fprintf("\n");
+disp(tBegin);
+
+%Prints the ending timestamp for the experient
+fprintf("\n");
+disp(tEnd);
+fprintf("\n");
+
+%{
+Creates an array,'time', starting from tBegin to tEnd that has the
+same length as our initial voltage array.
+%}
+time=linspace(tBegin,tEnd,q);
+time.Format='dd-MMM-yyyy hh:mm:ss:SSS';
+newTime=time;
+
+%Plots the resulting voltage array (X-axis = time, Y-axis = Voltage in V) 
+plot(newTime,data.Untitled.Untitled.data);
+title('Voltage Data')
+xlabel('Time (unit: day-month-year hours:minutes:seconds:fractions of a second)')
+ylabel('Voltage (unit: V)')
+return 
+
+end
