@@ -1,0 +1,31 @@
+function [combinedData]=combination_tdmsVolt_textData(tdms_datapath,txt_datapath)
+
+%Get txt data
+txtOUT=text_file_reader(txt_datapath);
+
+%Get tdms data
+[tdmsOUT,newTime]=tdms_data_reader(tdms_datapath,txt_datapath,0);
+
+%Get txt data
+
+tdmsTime=transpose(newTime);
+tdmsVolt=transpose(tdmsOUT.Untitled.Untitled.data);
+
+tdmsTimetable=timetable(tdmsTime,tdmsVolt);
+%Create timetable for txt output
+txtTimetable=timetable(txtOUT.timeStamp,txtOUT.trialNum,txtOUT.trialOut);
+
+%Synchronize timetable for tdms and txt data
+tdms_txt_mix=synchronize(tdmsTimetable,txtTimetable);
+
+%Convert timetable to table
+Q=timetable2table(tdms_txt_mix);
+
+%Fill missing entries with previous values (creates table)
+F=fillmissing(Q,"previous");
+
+%Convert table to a struct
+
+combinedData=table2struct(F);
+
+end
