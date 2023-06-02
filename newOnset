@@ -1,0 +1,25 @@
+function[pluto,startTime,endTime]=newOnset(tdms_Data,onsets,eventNum,bigEmpty)
+
+%Function 8: Acquire onset array with missing onsets substituted into onset
+%array and retrieve the starting and ending time of the tdms experiment. 
+
+%pluto is the onset data with missing onsets added
+
+pluto=onsets;
+
+for i=1:length(eventNum)
+
+    temp=pluto(eventNum(i):end);
+    pluto(eventNum(i):end)=[];
+    pluto=[pluto;bigEmpty(i)];
+    pluto=[pluto;temp];
+
+end
+
+
+    %Acquire starting and ending time of tdms experiment 
+
+startTime=tdms_Data.TT(1).sample(1).sec_adjusted;
+endTime=tdms_Data.TT(150).sample(end).sec_adjusted;
+
+end
