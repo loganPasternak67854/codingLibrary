@@ -11,6 +11,24 @@ output: a struct containing all tdms data and photobleaching corrected
 fiber-photometry data alligned to each event. All data is alligned such that
 ttl event flags can be identified within each event.
 
+Note: requires the following functions in order to operate: 
+- revamped_tdmsReader.m
+- Synapse_FP_analysis.m
+- dataAcquire.m
+- flagIndex.m
+- collectDatetime.m
+- adjustedTime.m
+- tTime_func.m
+- find_missing_onsets.m
+- newOnset.m
+- get_tTDMS.m
+- fractional_rationalization.m
+- get_stimIndex.m
+- difference_flags.m
+- fiberphoto_timeblock.m
+- get_thresholds.m
+- fiberphoto_plotFlags.m
+- tdms_plotFlags.m
 -------------------------------------------------------------------------------------------------------------
 %}
 
