@@ -1,0 +1,31 @@
+function[T1,T2new,Tcheck]=fractional_rationalization(tTDMS,cumulativeTDMS_data)
+
+%Function 10: Implement Fractional Rationalization
+
+    %Resample cumulativeTDMS_data such that it is the size of sZ using fractional rationalization
+  
+    % Signal of reference (sZ)
+
+T1=double(tTDMS);
+
+    % Signal you want to transform (cumulativeTDMS_data)
+
+T2=cumulativeTDMS_data;
+
+    % Disturbance checker
+
+Tcheck=(1:length(cumulativeTDMS_data));
+
+    %resampling signals (linear sequence)
+    %T2new is the resampled 'cumulativeTDMS_data'
+
+Fs = length(T1)/1000;            
+Fs1 = length(T1)/1000;
+Fs2 = length(T2)/1000;
+[P1,Q1] = rat(Fs/Fs1);             % Rational fraction approximation
+[P2,Q2] = rat(Fs/Fs2);             % frat rat of fs/fs2
+T1 = resample(T1,P1,Q1);
+Tcheck=resample(Tcheck,P2,Q2);     % Change sampling rate by rational factor
+T2new = resample(T2,P2,Q2);        % New Sample resample by fratrat and T1
+
+end
