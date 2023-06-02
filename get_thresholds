@@ -1,0 +1,20 @@
+function[limitBreak,not_limitBreak]=get_thresholds(trialNum,fiberphotoEvent,uplim,lowlim)
+%Function 14: Find when Gcamp data is and isn't over threshold limits
+% Isn't it supposed to be Z corrected data over limit????
+
+%Finds all locations where Gcamp data surpases upper and lower limit
+
+overlim=find(fiberphotoEvent(trialNum).resampled_tdms_data>uplim);
+
+underlim=find(fiberphotoEvent(trialNum).resampled_tdms_data<lowlim);
+
+
+    %Combine above locations into a single vector
+
+limitBreak=[underlim,overlim];
+
+sample=1:length(fiberphotoEvent(trialNum).resampled_Z_data);
+
+not_limitBreak=setdiff(sample,limitBreak);
+
+end
