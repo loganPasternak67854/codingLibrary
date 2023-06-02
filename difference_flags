@@ -1,0 +1,40 @@
+function[dgo,dnogo,dauto,dnorep,dinapprop]=difference_flags(stimIndex,goT,nogoT,autoT,norepT,inappropT)
+
+%Function 12: Find the difference between the event flag and stimulus flag
+%index for each event.
+
+for i=1:150
+
+    if isnan(goT(i))
+        dgo(i)=NaN;
+    else
+        dgo(i)=goT(i)-stimIndex(i);
+    end
+
+    if isnan(nogoT(i))
+        dnogo(i)=NaN;
+    else
+        dnogo(i)=nogoT(i)-stimIndex(i);
+    end
+
+    if isnan(autoT(i))
+        dauto(i)=NaN;
+    else
+        dauto(i)=autoT(i)-stimIndex(i);
+    end
+
+    if isnan(norepT(i))
+        dnorep(i)=NaN;
+    else
+        dnorep(i)=norepT(i)-stimIndex(i);
+    end
+
+    if isnan(inappropT(i))
+        dinapprop(i)=NaN;
+    else
+        dinapprop(i)=inappropT(i)-stimIndex(i);
+    end
+
+end
+
+end
