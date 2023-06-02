@@ -1,0 +1,28 @@
+function[ZAlignProper,fiberphotoEvent,timespan]=fiberphoto_timeblock(stimIndex,before,after,T2new,fs,initiation,Z_Data)
+
+%Function 13: Collect the  photo-bleaching corrected data for each event in
+%in block times; data is collected 10 seconds after stimulation and 5 seconds after
+%stimulation.
+
+ZAlignProper=cell([150,1]);
+
+for i=1:150
+
+    ZAlignProper{i}=Z_Data(stimIndex(i)-before:stimIndex(i)+after,1);
+
+end
+
+for i=2:140
+
+        fiberphotoEvent(i).eventNumber=i;
+        fiberphotoEvent(i).resampled_Z_data=double(ZAlignProper{i});
+        
+        timespan=(initiation(i)-before):(initiation(i)+after);
+        
+        fiberphotoEvent(i).resampled_tdms_data=T2new(timespan);
+        fiberphotoEvent(i).timespan=timespan/fs;
+
+
+end
+
+end
