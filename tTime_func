@@ -1,0 +1,48 @@
+function[tTime,goT,nogoT,autoT,norepT,inappropT]=tTime_func(G_data,fs,goTime,nogoTime,autoTime,norepTime,inappropTime)
+
+%Function 6: Retrieve tTime and important indices
+
+%t1 is when the fiberphoto datacollection starts and t2 is when it ends
+
+%fs=Data.streams.IsoB.fs;
+
+tTime = ((1:numel(G_data))/ fs)';
+
+%tTime = ((1:numel(Data.streams.G__B.data))/ fs)';
+
+
+for i=1:150
+
+    if isnan(goTime(i))
+        goT(i)=NaN;
+    else
+        goT(i)=find(tTime>=goTime(i),1,'first');
+    end
+
+    if isnan(nogoTime(i))
+        nogoT(i)=NaN;
+    else
+        nogoT(i)=find(tTime>=nogoTime(i),1,'first');
+    end
+
+    if isnan(autoTime(i))
+        autoT(i)=NaN;
+    else
+        autoT(i)=find(tTime>=autoTime(i),1,'first');
+    end
+
+    if isnan(norepTime(i))
+        norepT(i)=NaN;
+    else
+        norepT(i)=find(tTime>=norepTime(i),1,'first');
+    end
+
+    if isnan(inappropTime(i))
+        inappropT(i)=NaN;
+    else
+        inappropT(i)=find(tTime>=inappropTime(i),1,'first');
+    end
+   
+end
+
+end
