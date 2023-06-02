@@ -1,0 +1,211 @@
+function [TT]=revamped_tdmsReader()
+
+ %{
+-------------------------------------------------------------------------------------------------------------
+function call: [TT]=revamped_tdmsReader()
+
+input: You will first be asked to input the folder containing all 150 tdms
+files. Second, you will be instructed to give the text file corresponding
+to the 150 tdms files. 
+
+output: a struct containing all tdms data. The data lick data is alligned
+with ttl event flags and timestamps for each event run.
+
+-------------------------------------------------------------------------------------------------------------
+%}   
+    
+
+
+%{
+    function [textData,indexHigh,indexLow,eventTranspose,tdmsPaths,data,wobble]=revamped_tdmsReader(folderPath,txt_filePath)
+    
+    OBJECTIVE: Read the 150 .tdms data files into matlab as a structure and
+    then allign the event number with the associated tdms sample run in order
+    to plot out the voltage accross the different events and timestamps.
+    
+    %}
+
+    %Retrieves the tdms folder datapath and the txt file datapath.
+    %(NOTE: tdms folder datapath should be retrieved first and txt data should
+    %be read in second.)
+
+fprintf('Please give me a tdms file folder.\n');
+
+path1=uigetdir;
+
+if isequal(path1,0)
+    disp('User selected Cancel');
+    return
+else
+    disp(['User selected ',path1]);
+    folderPath=path1;
+end
+
+fprintf('Please give me a text file.\n');
+
+[file2,path2]=uigetfile('*.txt');
+if isequal(file2,0)
+    disp('User selected Cancel');
+    return
+else
+    disp(['User selected ',fullfile(path2,file2)]);
+    txt_filePath=fullfile(path2,file2);
+end
+
+    %Implementation of a Progress bar
+
+tic
+f = waitbar(0,'Please wait...');
+
+    %Reads information about tdms data in tdms folder
+
+p=dir([folderPath '/*.tdms']);
+
+    %Create an array of filenames
+
+for k=1:length(p)
+
+    filename=[folderPath '/' p(k).name];
+
+end
+
+    %Create a string array which will contain the tdms data paths
+
+tdmsPaths=strings(150,1);
+
+    %Read data paths into string array
+
+for w=1:150
+
+tdmsPaths(w)=strcat(p(w).folder,'/',p(w).name);
+
+end
+
+    %Convert string array into character array
+
+tdmsPaths=convertStringsToChars(tdmsPaths);
+
+
+    %Create an array of structures.
+
+for w=1:150
+
+    data(w).sample=struct;
+
+end
+
+    %Put the data from each tdms data sample into each individual branch
+    %structure connected to the main one
+
+for w=1:150
+
+    q=tdmsPaths{w};
+    data(w).sample=TDMS_getStruct(q);
+end
+
+waitbar(.67,f,'Tdms Data Retrieved');
+
+    %Read the text data into the workspace
+
+textData=text_file_reader(txt_filePath);
+
+waitbar(0.75,f,'Text Data Retrieved');
+
+    %Retrieve the starting index of the event instances and store in indexLow
+
+indexLow=zeros(1,150);
+
+eventTranspose=textData.trialNum;
+eventTranspose=transpose(eventTranspose);
+
+
+for j=1:150
+
+    indexLow(j)=find(eventTranspose==j,1,'first');
+
+end
+
+    %Use indexLow to retrieve the timestamp and trial output data 
+    %that corresponds to a specific event and store them into a cell 150 by 3
+    %cell. The first column represents the datetime values and the second
+    %column represents the trial outputs. The third column will store an array
+    %of the voltage values present within the tdms file.
+
+splitEvents=cell([150,4]);
+
+    %The even numbered indexes of the tdms data are invalid so need to take them out
+
+trueTdms=cell([150,1]);
+
+for i=1:150
+    screen=data(i).sample.Untitled.Untitled.data;
+    l=length(data(i).sample.Untitled.Untitled.data);
+    truth=screen(1:2:l);
+    trueTDMS{i}=truth;
+end
+
+for i=1:149
+ 
+    splitEvents{i,1}=textData.timeStamp(indexLow(i):(indexLow(i+1)-1));
+    splitEvents{i,2}=textData.trialOut(indexLow(i):(indexLow(i+1)-1));
+    splitEvents{i,3}=trueTDMS{i};
+
+end
+
+splitEvents{150,1}=textData.timeStamp(indexLow(150):end);
+splitEvents{150,2}=textData.trialOut(indexLow(150):end);
+splitEvents{150,3}=trueTDMS{150};
+
+for i=1:150
+    splitEvents{i,3}=transpose(splitEvents{i,3});
+end
+
+    %Incorperate the overall timespan for each event of the session 
+    %within the fourth column of the splitEvents cell array  
+
+for i=1:150
+    eventNum=splitEvents{i,1};
+    n=length(eventNum);
+    timeBegin=eventNum(1);
+    timeEnd=eventNum(n);
+    q=length(splitEvents{i,3});
+    time=linspace(timeBegin,timeEnd,q);
+    time.Format='dd-MMM-yyyy HH:mm:ss:SSSS';
+    splitEvents{i,4}=transpose(time);
+end
+
+%Synchronizes the tdms lick data to the ttl event flags from the text file
+
+for i=1:150
+
+    timetable1=timetable(splitEvents{i,1},splitEvents{i,2});
+    timetable2=timetable(splitEvents{i,4},splitEvents{i,3});
+    timetableRes=synchronize(timetable1,timetable2);
+    tableRes=timetable2table(timetableRes);
+    tableRes=fillmissing(tableRes,"previous");
+    TT(i).sample=table2struct(tableRes);
+
+end
+
+waitbar(.80,f,'TDMS and Text data combined');
+
+waitbar(90,f,'Saving Data');
+
+%If you want to save your data into a .mat file then enter one. If you enter
+%one then you'll be prompted to give a name for you data file.
+
+varIN=input('If you want a tdms .mat file please input 1:\n');
+
+if varIN==1
+    name=input('Please provide a name for your data file.\n','s');
+    save(name,'TT');
+end
+
+waitbar(100,f,'Finished')
+
+close(f)
+
+toc
+
+
+end
