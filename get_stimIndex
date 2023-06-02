@@ -1,1 +1,39 @@
+function[initiation,before,after,stimIndex]=get_stimIndex(T1,pluto,fs,tTime)
 
+%Function 11: Finds the index at which each event occurs and the index for which the 
+%stimulation flags occur for each event 
+
+  %{
+  There will be increasing disturbances in signal as time goes on due to
+  fractional rationalization, therefore the final 10 events are not
+  included in analysis. The first event will also not be used.
+  %}
+
+for i=1:150
+    
+  key=find(T1>=pluto(i),1,"first");
+  initiation(i)=key;
+
+end
+
+    %Select data before flag
+
+Sec1=5;
+Sec2=10;
+before=round(Sec1*fs);
+after=round(Sec2*fs);
+
+%ZAlignProper is the fiber-photometry data for each event
+
+%Find index in tTime (time stamp of fiberphoto data) where stimulation
+ %onsets occur
+ 
+ 
+for i=1:150
+
+    key=find(tTime>=pluto(i),1,"first");
+    stimIndex(i)=key;
+
+end
+
+end
