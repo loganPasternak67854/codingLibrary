@@ -1,0 +1,36 @@
+function[bigEmpty,eventNum]=find_missing_onsets(timeTDMS,onsets)
+
+    %Function 7: Find elements of tdmsData that does not exist in fp_Data and store them
+    %in bigEmpty and store the indexes in which they don't appear in eventNum
+
+l=length(timeTDMS);
+w=length(onsets);
+
+bigEmpty=[];
+eventNum=[];
+
+for i=1:l
+
+    match=false;
+
+    for j=1:w
+      
+        if abs(timeTDMS(i)-onsets(j))<0.005*max(timeTDMS(i),onsets(j))
+
+            match=true;
+
+        break;
+
+        end
+
+    end
+
+    if match==false
+        eventNum=[eventNum;i];
+        bigEmpty=[bigEmpty;timeTDMS(i)];
+
+    end
+
+end
+
+end
