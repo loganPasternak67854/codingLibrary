@@ -1,0 +1,43 @@
+function[Z_Data,fp_Data,tdms_Data,onset,onsets,fs,G_data,tS,Zed]=dataAcquire()
+
+%Function 1: Retrieve fiber photo and tdms data input: none , output:
+%Z_Data, fp_Data, tdms_Data
+%--------------------------------------------------------------------------
+    %Retrieve the fiberphotometry.mat file and the tdms.mat file from
+    %the files menue (NOTE: must input fiberphoto data first then tdms)
+
+fprintf('Please give me a fiberphoto file folder.\n');
+
+pause(5);
+
+Synapse_FP_analysis;
+
+Z_Data=Z;
+
+fp_Data=Data;
+
+fprintf('Please give me a tdms .mat file.\n');
+
+[file2,path2]=uigetfile;
+if isequal(file2,0)
+    disp('User selected Cancel');
+    return
+else
+    disp(['User selected ',fullfile(path2,file2)]);
+    combined_datapath=fullfile(path2,file2);
+end
+
+    %Retrieve relevant data
+
+onset=Data.epocs.sqr_.onset(1);
+fs=Data.streams.IsoB.fs;
+G_data=Data.streams.G__B.data;
+onsets=Data.epocs.sqr_.onset;
+tS=Ts;
+
+    %Read in the tdms data using the load command and name
+    %the struct 'tdms_Data'
+
+tdms_Data=load(combined_datapath);
+
+end
