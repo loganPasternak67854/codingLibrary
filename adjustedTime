@@ -1,0 +1,32 @@
+function[tdms_Data,timeTDMS]=adjustedTime(tdms_Data,stimulusIndex,cumulativeTDMS_seconds,onset)
+%Function 4: Find timeTDMS and apply the adjusted time in seconds to the
+%tdmsData structure
+
+timeTDMS=zeros(150,1);
+
+for i=1:150
+
+    timeTDMS(i)=tdms_Data.TT(i).sample(stimulusIndex(i)).sec;
+ 
+end
+
+d=timeTDMS(1)-onset;
+
+%d=timeTDMS(1)-Data.epocs.sqr_.onset(1);
+
+timeTDMS=timeTDMS-d;
+
+k=1;
+
+for i=1:150
+
+    for j=1:length([tdms_Data.TT(i).sample.Time])
+
+        tdms_Data.TT(i).sample(j).sec_adjusted=cumulativeTDMS_seconds(k)-d;
+        k=k+1;
+
+    end
+
+end
+
+end
