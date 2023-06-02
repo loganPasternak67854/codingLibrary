@@ -1,0 +1,29 @@
+function[cumulativeTDMS_data,cumulativeTDMS_tags,tTDMS]=get_tTDMS(tdms_Data,tS,startTime,endTime)
+
+%Function 9: Gather the lick data and event markers for each event as well
+%as tTDMS.
+
+    %cumulativeTDMS_data contains all the lick for every event and
+    %cumulativeTDMS_tags contains all the event markers for each event
+
+for i=1:150
+
+    if i==1
+    
+        cumulativeTDMS_data=tdms_Data.TT(i).sample.Var1_timetable2;
+        cumulativeTDMS_tags=tdms_Data.TT(i).sample.Var1_timetable1;
+    
+    else
+    
+        cumulativeTDMS_data=[cumulativeTDMS_data,tdms_Data.TT(i).sample.Var1_timetable2];
+        cumulativeTDMS_tags=[cumulativeTDMS_tags,tdms_Data.TT(i).sample.Var1_timetable1];
+    
+    end
+
+end
+
+tTDMS=find(tS>=startTime & tS<=endTime);
+
+tTDMS=tS(tTDMS);
+
+end
