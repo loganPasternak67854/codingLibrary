@@ -1,0 +1,212 @@
+function[tdms_Data,Z_Data,fp_Data]=fiberphoto_tdms_CLEAN()
+%{
+-------------------------------------------------------------------------------------------------------------
+function call: [tdms_Data,Z_Data,fp_Data,pluto,T2new,initiation,fiberphotoEvent,before]=fiberphoto_tdms_Zed()
+
+input: You will first be asked to give the function a folder containing all
+the fiber-phtometry data then you will be asked to input a .mat file containing the
+tdms data received from revamped_tdmsReader.m
+
+output: a struct containing all tdms data and photobleaching corrected
+fiber-photometry data alligned to each event. All data is alligned such that
+ttl event flags can be identified within each event.
+
+-------------------------------------------------------------------------------------------------------------
+%}
+
+now0=tic();
+
+now1=tic();
+%dataAcquire: Retrieve fiber photo and tdms data input: none , output:
+%Z_Data, fp_Data
+%--------------------------------------------------------------------------
+[Z_Data,fp_Data,tdms_Data,onset,onsets,fs,G_data,tS]=dataAcquire();
+%--------------------------------------------------------------------------
+t1=toc(now1);
+
+now2=tic();
+%flagIndex: Find the first instance of stimulus respnse in tdms events
+%input: tdms_Data / output: stimulusIndex, goIndex, nogoIndex, autoIndex,
+%norepIndex, inappropIndex
+%--------------------------------------------------------------------------
+[stimulusIndex,goIndex,nogoIndex,autoIndex,norepIndex,inappropIndex]=flagIndex(tdms_Data);
+%--------------------------------------------------------------------------
+t2=toc(now2);
+
+now3=tic();
+%collectDatetime:Collect cumulative datetime values,convert
+%cumulativeTDMS_datetime data into seconds, and store cumulativeTDMS_seconds into tdmsStruct
+%input: tdms_Data
+%output:tdms_Data
+%--------------------------------------------------------------------------
+[tdms_Data,cumulativeTDMS_seconds]=collectDatetime(tdms_Data);
+%--------------------------------------------------------------------------
+t3=toc(now3);
+
+now4=tic();
+%adjustedTime: Find timeTDMS and apply the adjusted time in seconds to the
+%tdmsData structure
+%--------------------------------------------------------------------------
+[tdms_Data,timeTDMS]=adjustedTime(tdms_Data,stimulusIndex,cumulativeTDMS_seconds,onset);
+%--------------------------------------------------------------------------
+t4=toc(now4);
+
+now5=tic;
+%flagTime: Retrieve the time at which event flags occur
+%--------------------------------------------------------------------------
+[goTime,nogoTime,autoTime,norepTime,inappropTime]=flagTime(tdms_Data,goIndex,nogoIndex,autoIndex,norepIndex,inappropIndex);
+%--------------------------------------------------------------------------
+t5=toc(now5);
+
+now6=tic();
+%tTime_func: Retrieve tTime and important indices
+%--------------------------------------------------------------------------
+[tTime,goT,nogoT,autoT,norepT,inappropT]=tTime_func(G_data,fs,goTime,nogoTime,autoTime,norepTime,inappropTime);
+%--------------------------------------------------------------------------
+t6=toc(now6);
+
+now7=tic();
+%find_missing_onsets: Find elements of tdmsData that does not exist in fp_Data and store them 
+% in bigEmpty and store the indexes in which they don't appear in eventNum
+%--------------------------------------------------------------------------
+[bigEmpty,eventNum]=find_missing_onsets(timeTDMS,onsets);
+%--------------------------------------------------------------------------
+t7=toc(now7);
+
+now8=tic();
+%newOnset: Acquire onset array with missing onsets substituted into onset
+%array and retrieve the starting and ending time of the tdms experiment.
+%--------------------------------------------------------------------------
+[pluto,startTime,endTime]=newOnset(tdms_Data,onsets,eventNum,bigEmpty);
+%--------------------------------------------------------------------------
+t8=toc(now8);
+
+now9=tic();
+%get_tTDMS: Gather the lick data and event markers for each event as well
+%as tTDMS.
+%--------------------------------------------------------------------------
+[cumulativeTDMS_data,cumulativeTDMS_tags,tTDMS]=get_tTDMS(tdms_Data,tS,startTime,endTime);
+%--------------------------------------------------------------------------
+t9=toc(now9);
+
+now10=tic();
+%fractional_rationalization: Implement Fractional Rationalization
+%--------------------------------------------------------------------------
+[T1,T2new,Tcheck]=fractional_rationalization(tTDMS,cumulativeTDMS_data);
+%--------------------------------------------------------------------------
+t10=toc(now10);
+
+now11=tic();
+%get_stimIndex: Finds the index at which each event occurs and the index for which the 
+%stimulation flags occur for each event 
+%--------------------------------------------------------------------------
+[initiation,before,after,stimIndex]=get_stimIndex(T1,pluto,fs,tTime);
+%--------------------------------------------------------------------------
+t11=toc(now11);
+
+now12=tic();
+%difference_flags: Find the difference between the event flag and stimulus flag
+%index for each event. If there is no flag of a specific type for an event
+%replace with NaN. 
+%--------------------------------------------------------------------------
+[dgo,dnogo,dauto,dnorep,dinapprop]=difference_flags(stimIndex,goT,nogoT,autoT,norepT,inappropT);
+%--------------------------------------------------------------------------
+t12=toc(now12);
+
+now13=tic();
+%fiberphoto_timeblock: Collect the  photo-bleaching corrected data for each event in
+%in block times; data is collected 10 seconds after stimulation and 5 seconds after
+%stimulation.
+%--------------------------------------------------------------------------
+[ZAlignProper,fiberphotoEvent,timespan]=fiberphoto_timeblock(stimIndex,before,after,T2new,fs,initiation,Z_Data);
+%--------------------------------------------------------------------------
+t13=toc(now13);
+
+%Select the trial you would like to test
+
+trialNum=input("Please give the trial number 2->149 :\n");
+
+%User inputs lower limit and upper limit for tdms data
+
+uplim=input("Please give an upper limit for the lick data:\n");
+
+lowlim=input("Please give a lower limit for the lick data:\n");
+
+now14=tic();
+%get_thresholds: Find when Gcamp data is and isn't over threshold limits
+%--------------------------------------------------------------------------
+[limitBreak,not_limitBreak]=get_thresholds(trialNum,fiberphotoEvent,uplim,lowlim);
+%--------------------------------------------------------------------------
+t14=toc(now14);
+
+tiledlayout(2,1);
+
+%Fiberphoto plot
+nexttile
+
+plot(limitBreak,fiberphotoEvent(trialNum).resampled_Z_data(limitBreak),'r.');
+title('Event 1: FiberPhotometry Data With Photobleaching Removed');
+
+now15=tic();
+% fiberphoto_plotFlags: Place a color coded vertical line in the photobleaching-corrrected
+% fiber-photometry data graphs such that first instances of event flags such
+% as Go, No Go, and Auto are clearly visible.
+%--------------------------------------------------------------------------
+fiberphoto_plotFlags(trialNum,before,dgo,dnogo,dauto,dnorep,dinapprop);
+%--------------------------------------------------------------------------
+t15=toc(now15);
+
+hold on
+
+plot(not_limitBreak,fiberphotoEvent(trialNum).resampled_Z_data(not_limitBreak),'b.');
+
+xline(before,'r--',{'Stimulus'});
+
+hold off
+
+%Tdms plot
+nexttile
+
+plot(fiberphotoEvent(trialNum).resampled_tdms_data);
+
+title('tdmsLick Data');
+
+hold on
+
+now16=tic();
+%tdms_plotFlags: Plot color coded event flags in tdms data
+%--------------------------------------------------------------------------
+tdms_plotFlags(trialNum,before,dgo,dnogo,dauto,dnorep,dinapprop);
+%--------------------------------------------------------------------------
+t16=toc(now16);
+
+xline(before,'r--',{'Stimulus'});
+
+yline(uplim,"r--",{'Upper Limit'});
+
+yline(lowlim,"r--",{'Lower Limit'});
+
+hold off
+
+tAll=toc(now0);
+
+fprintf('\n');
+fprintf('dataAcquire: %f\n',t1);
+fprintf('flagIndex: %f\n',t2);
+fprintf('collecttDatetime: %f\n',t3);
+fprintf('adjustedTime: %f\n',t4);
+fprintf('flagTime: %f\n',t5);
+fprintf('tTime_func: %f\n',t6);
+fprintf('find_missing_onsets: %f\n',t7);
+fprintf('newOnset: %f\n',t8);
+fprintf('get_tTDMS: %f\n',t9);
+fprintf('fractional_rationalization: %f\n',t10);
+fprintf('get_stimIndex: %f\n',t11);
+fprintf('difference_flags: %f\n',t12);
+fprintf('fiberphoto_timeblock: %f\n',t13);
+fprintf('get_thresholds: %f\n',t14);
+fprintf('fiberphoto_plotFlags: %f\n',t15);
+fprintf('tdms_plotFlags: %f\n',t16);
+fprintf('total execution time: %f\n',tAll);
+
+end
