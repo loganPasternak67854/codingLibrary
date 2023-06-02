@@ -1,0 +1,45 @@
+function[goTime,nogoTime,autoTime,norepTime,inappropTime]=flagTime(tdms_Data,goIndex,nogoIndex,autoIndex,norepIndex,inappropIndex)
+
+%Function 5: Retrieve the time at which event flags occur
+
+goTime=zeros(150,1);
+nogoTime=zeros(150,1);
+autoTime=zeros(150,1);
+norepTime=zeros(150,1);
+inappropTime=zeros(150,1);
+
+for i=1:150
+
+    if isnan(goIndex(i))
+        goTime(i)=NaN;
+    else
+        goTime(i)=tdms_Data.TT(i).sample(goIndex(i)).sec_adjusted;
+    end
+
+    if isnan(nogoIndex(i))
+        nogoTime(i)=NaN;
+    else
+        nogoTime(i)=tdms_Data.TT(i).sample(nogoIndex(i)).sec_adjusted;
+    end
+
+    if isnan(autoIndex(i))
+        autoTime(i)=NaN;
+    else
+        autoTime(i)=tdms_Data.TT(i).sample(autoIndex(i)).sec_adjusted;
+    end
+
+    if isnan(norepIndex(i))
+        norepTime(i)=NaN;
+    else
+        norepTime(i)=tdms_Data.TT(i).sample(norepIndex(i)).sec_adjusted;
+    end
+
+    if isnan(inappropIndex(i))
+        inappropTime(i)=NaN;
+    else
+        inappropTime(i)=tdms_Data.TT(i).sample(inappropIndex(i)).sec_adjusted;
+    end
+
+end
+
+end
