@@ -1,52 +1,40 @@
-function[stimulusIndex,goIndex,nogoIndex,autoIndex,norepIndex,inappropIndex]=flagIndex(tdms_Data)
+function[tdms_Data,cumulativeTDMS_seconds]=collectDatetime(tdms_Data)
 
-%Function 2: Find the first instance of stimulus respnse in tdms events
-%input: tdms_Data / output: stimulusIndex, goIndex, nogoIndex, autoIndex,
-%norepIndex, inappropIndex
-
-
-stimulusIndex=zeros(150,1);
-goIndex=zeros(150,1);
-nogoIndex=zeros(150,1);
-autoIndex=zeros(150,1);
-norepIndex=zeros(150,1);
-inappropIndex=zeros(150,1);
+%Function 3:Collect cumulative datetime values,convert
+%cumulativeTDMS_datetime data into seconds, and store cumulativeTDMS_seconds into tdmsStruct
+%input: tdms_Data
+%output:tdms_Data
+%--------------------------------------------------------------------------
+%Collect cumulative datetime values
 
 for i=1:150
 
-        temp=[tdms_Data.TT(i).sample.Var1_timetable1].';
-        stimulusIndex(i)=find("Stimulus"==temp,1,'first');
-    
-        if isempty(find("Go"==temp,1,'first'))==1
-            goIndex(i)=NaN;
-        else
-            goIndex(i)=find("Go"==temp,1,'first');
-        end
+    if i==1
+        cumulativeTDMS_datetime=[tdms_Data.TT(i).sample.Time];
+    else
+        cumulativeTDMS_datetime=[cumulativeTDMS_datetime,tdms_Data.TT(i).sample.Time];    
+    end
 
-        if isempty(find("No Go"==temp,1,'first'))==1
-            nogoIndex(i)=NaN;
-        else
-            nogoIndex(i)=find("No Go"==temp,1,'first');
-        end
+end
 
-        if isempty(find("Auto Reward"==temp,1,'first'))==1
-            autoIndex(i)=NaN;
-        else
-            autoIndex(i)=find("Auto Reward"==temp,1,'first');
-        end
+%convert cumulativeTDMS_datetime data into seconds
 
-        if isempty(find("No Response"==temp,1,'first'))==1
-            norepIndex(i)=NaN;
-        else
-            norepIndex(i)=find("No Response"==temp,1,'first');
-        end
+tnew=(cumulativeTDMS_datetime-cumulativeTDMS_datetime(1));
+cumulativeTDMS_seconds=seconds(tnew);
 
-        if isempty(find("Inappropriate Response"==temp,1,'first'))==1
-            inappropIndex(i)=NaN;
-        else
-            inappropIndex(i)=find("Inappropriate Response"==temp,1,'first');
-        end
-        
+%Store cumulativeTDMS_seconds into tdmsStruct
+
+k=1;
+
+for i=1:150
+
+    for j=1:length([tdms_Data.TT(i).sample.Time])
+
+        tdms_Data.TT(i).sample(j).sec=cumulativeTDMS_seconds(k);
+        k=k+1;
+
+    end
+
 end
 
 end
