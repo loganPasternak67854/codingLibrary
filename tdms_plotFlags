@@ -1,0 +1,35 @@
+function[]=tdms_plotFlags(trialNum,before,dgo,dnogo,dauto,dnorep,dinapprop)
+
+%Function 16: Plot color coded event flags in tdms data
+
+if isnan(dgo(trialNum))
+
+else
+xline(before+dgo(trialNum),'b--',{'Go'});
+end
+
+if isnan(dnogo(trialNum))
+
+else
+xline(before+dnogo(trialNum),'m--',{'No Go'});
+end
+
+if isnan(dauto(trialNum))
+
+else
+xline(before+dauto(trialNum),'c--',{'Auto'});
+end
+
+if isnan(dnorep(trialNum))
+
+else
+xline(before+dnorep(trialNum),'y--',{'No Reponse'});
+end
+
+if isnan(dinapprop(trialNum))
+
+else
+xline(before+dinapprop(trialNum),'g--',{'Inappropriate Response'});
+end
+
+end
